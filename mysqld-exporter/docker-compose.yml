@@ -1,0 +1,103 @@
+version: "3"
+
+volumes:
+  prometheus_data: {}
+  mysqld_data: {}
+  # grafana_data: {}
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.37.8
+    #environment:
+    #  - TZ=UTC-8
+    volumes:
+      - ./etc-prometheus:/etc/prometheus:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--web.enable-lifecycle'
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - '19090:9090'
+
+  ## mysqldexporter: mysql 服务器指标输出
+  ## https://github.com/prometheus/mysqld_exporter
+  mysqldexporter:
+    image: prom/mysqld-exporter:v0.14.0
+    environment:
+      - DATA_SOURCE_NAME=root:Foo123456@(mysqld:3306)/
+    depends_on:
+      - mysqld
+    #ports:
+    #  - 9104:9104
+
+  ## mysqld: 模拟一台 mysql 数据库服务器
+  mysqld:
+    image: mysql:8.0
+    volumes:
+      - mysqld_data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=Foo123456
+      - MYSQL_DATABASE=sir5kong
+    #ports:
+    #  - 3306:3306
+    command:
+      - "mysqld"
+      - "--innodb_buffer_pool_size=32M"
+      - "--innodb_buffer_pool_instances=1"
+      - "--slow_query_log=1"
+      - "--long_query_time=0.1"
+
+  ## slowquery 模拟慢查询，生成监控数据
+  slowquery:
+    image: mysql:8.0
+    volumes:
+      - ./slowquery.sh:/slowquery.sh
+    command:
+      - "/bin/bash"
+      - "-c"
+      - "/slowquery.sh"
+    environment:
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=Foo123456
+      - MYSQL_HOST=mysqld
+      - MYSQL_DATABASE=sir5kong
+    depends_on:
+      - mysqld
+      - mysqldexporter
+    stop_grace_period: 1s
+
+  ## alertmanager 报警管理器
+  alertmanager:
+    image: prom/alertmanager:v0.25.0
+    volumes:
+      - ./alertmanager.yml:/config/alertmanager.yml
+    command:
+      - '--config.file=/config/alertmanager.yml'
+    #ports:
+    #  - '9093:9093'
+
+  ## alert-relay 用于转发报警消息，兼容飞书、钉钉、微信，可以自定义 WebHook 消息格式
+  alert-relay:
+    image: feiyu563/prometheus-alert:v4.8.2
+    ports:
+      - "38080:8080"
+    environment:
+      - PA_LOGIN_USER=admin
+      - PA_LOGIN_PASSWORD=Foo123456
+      - PA_OPEN_FEISHU=1
+      - PA_OPEN_DINGDING=1
+      - PA_OPEN_WEIXIN=1
+
+  #adminer:
+  #  image: adminer:4.8.1
+  #  ports:
+  #    - "18080:8080"
+  #  depends_on:
+  #    - mysqld
+
+  #grafana:
+  #  image: grafana/grafana:9.5.2
+  #  ports:
+  #    - 3000:3000
+  #  volumes:
+  #    - grafana_data:/var/lib/grafana

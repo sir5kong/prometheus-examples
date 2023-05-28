@@ -1,0 +1,30 @@
+global:
+  resolve_timeout: 5m
+  smtp_smarthost: 'smtp.exmail.qq.com:465'
+  smtp_from: 'monitor@example.com'
+  smtp_auth_username: 'monitor@example.com'
+  # smtp_auth_password: ''
+  smtp_require_tls: false
+
+route:
+  receiver: 'default-receiver'
+  group_by: ['alertname']
+  repeat_interval: 8h
+  routes:
+    - receiver: 'devops-receiver'
+      #continue: true
+      match:
+        team: devops
+
+receivers:
+  - name: default-receiver
+    webhook_configs:
+    - url: 'http://alert-relay:8080/prometheusalert?type=fs&tpl=prometheus-fs&fsurl=https://open.feishu.cn/open-apis/bot/v2/hook/FEISHU_WEBHOOK'
+      send_resolved: true
+    #email_configs:
+    #- to: 'user@example.com'
+    #  send_resolved: true
+  - name: devops-receiver
+    webhook_configs:
+    - url: 'http://alert-relay:8080/prometheusalert?type=fs&tpl=prometheus-fs&fsurl=https://open.feishu.cn/open-apis/bot/v2/hook/DEVOPS_FEISHU_WEBHOOK'
+      send_resolved: true

@@ -1,0 +1,19 @@
+groups:
+- name: mysql
+  rules:
+  - alert: "mysql 慢查询报警"
+    expr: sum by (db_instance) (increase(mysql_global_status_slow_queries{}[3m])) > 300
+    labels:
+      severity: warning
+      team: devops
+    annotations:
+      summary: 'mysql 慢查询数量 3 分钟超过 300'
+      description: 'mysql 三分钟慢查询数量 {{ printf "%.0f" $value }} 次 (报警阈值 300), 数据库实例: {{$labels.db_instance}}'
+  - alert: "mysql 慢查询报警 (test)"
+    expr: sum by (db_instance) (increase(mysql_global_status_slow_queries{}[3m])) > 50
+    for: 1m
+    labels:
+      severity: info
+    annotations:
+      summary: 'mysql 慢查询数量 3 分钟超过 50'
+      description: 'mysql 三分钟慢查询数量 {{ printf "%.0f" $value }} 次 (报警阈值 50), 数据库实例: {{$labels.db_instance}}'
