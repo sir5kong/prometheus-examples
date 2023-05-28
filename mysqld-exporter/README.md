@@ -1,6 +1,17 @@
 # prometheus 监控 mysql 慢查询
 
+![avatar](picture/prometheus-alerts.png)
+
+---
+
 我们用 [docker-compose](https://docs.docker.com/compose/) 部署一套单机版 prometheus 集群，`docker-compose up -d` 启动后可以直接看到监控效果。
+
+``` shell
+git clone https://github.com/sir5kong/prometheus-examples.git
+cd mysqld-exporter
+
+docker-compose up -d
+```
 
 ## 部署思路
 
@@ -209,7 +220,10 @@ services:
 
 ## 启动
 
-``` yaml
+``` shell
+git clone https://github.com/sir5kong/prometheus-examples.git
+cd mysqld-exporter
+
 docker-compose up -d
 ```
 
@@ -219,7 +233,7 @@ docker-compose up -d
 
 > 如果不是本机部署，需要把上面的 ip 换成目标机器的地址。
 
-![avatar](picture/alert.png)
+![avatar](picture/prometheus-alerts.png)
 
 ![avatar](picture/graph-pannel.png)
 
@@ -234,7 +248,12 @@ max by(db_instance) (increase(mysql_global_status_slow_queries[3m]))
 ## prometheus 查询语法
 
 上面的报警规则 `sum by (db_instance) (increase(mysql_global_status_slow_queries{}[3m])) > 50`, 我们用到了 `mysql_global_status_slow_queries` 这个「计数器指标」，当前值是 mysql 服务器运行到现在所有慢查询总数。
+``` yaml
+git clone https://github.com/sir5kong/prometheus-examples.git
+cd mysqld-exporter
 
+docker-compose up -d
+```
 想要清晰地展现慢查询趋势和高低峰时间段，一般会用到 `rate` `irate` `increase` 等函数。
 
 ``` sql
