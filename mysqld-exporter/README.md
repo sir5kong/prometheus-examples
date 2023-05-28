@@ -8,7 +8,7 @@
 
 ``` shell
 git clone https://github.com/sir5kong/prometheus-examples.git
-cd mysqld-exporter
+cd prometheus-examples/mysqld-exporter
 
 docker-compose up -d
 ```
@@ -218,11 +218,11 @@ services:
 
 ```
 
-## 启动
+## docker compose 启动
 
 ``` shell
 git clone https://github.com/sir5kong/prometheus-examples.git
-cd mysqld-exporter
+cd prometheus-examples/mysqld-exporter
 
 docker-compose up -d
 ```
