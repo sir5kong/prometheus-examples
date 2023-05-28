@@ -24,13 +24,15 @@ services:
 
 ### 模拟 mysql 慢查询
 
-写一个脚本模拟 mysql 慢查询，完整脚本请参考 [slowquery.sh](https://github.com/sir5kong/prometheus-examples/blob/main/mysqld-exporter/slowquery.sh)
+写一个脚本模拟 mysql 慢查询：
 
 ``` shell
 for i in {1..65535}; do
   mysql -e "select sleep(0.5)"
 done
 ```
+
+> 完整脚本请参考 [slowquery.sh](https://github.com/sir5kong/prometheus-examples/blob/main/mysqld-exporter/slowquery.sh)
 
 > 为了快速看到监控数据，我们已经把 mysql 的慢查询阈值调到 0.1 秒，上一步启动的 mysqld 加入了启动参数 `--long_query_time=0.1`。`long_query_time` 默认是 10 秒，建议调低，生产环境中调到 0.1 秒也是可以的。
 
